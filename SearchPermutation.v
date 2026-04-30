@@ -1,12 +1,22 @@
 
 (* ################################################################# *)
-(** * Search and Permutations
+(** Search and Permutations
 
-    CS 472 check-in starter.
+    CS 472 SP'26 Final Project.
     Zuhaib Ilyas & Sufiyan Shariff
-    Partially used AI to help with proof, where stuck *)
+    
+    Sources Used / Citations:
+      Partially used AI to help with proof, where stuck (clarify as per profs request)
+      insert, sort functions: https://coq.vercel.app/ext/sf/vfa/full/Sort.html
+      Sorted Predicate, proofs for check_inserting_into_sorted & sorting_lists_works: https://gist.github.com/siraben/3fedfc2c5a242136a9bc6725064e9b7d
+    
+    add to README later:
+      installed coq-hammer
+*)
 
 From Stdlib Require Import Arith List Permutation.
+Import ListNotations.
+From Hammer Require Import Tactics.
 
 (* ################################################################# *)
 (** * Linear Search *)
@@ -52,3 +62,69 @@ Proof.
     apply Permutation_in with (l := l_perm) (l' := l); [| assumption].
     now apply Permutation_sym.
 Qed.
+
+(* binary search *)
+(* need to make sure list is sorted first *)
+
+(* sorting
+  - insertion sort: https://coq.vercel.app/ext/sf/vfa/full/Sort.html
+*)
+
+(* if list is empty, just make a singleton list with i
+   else, determine the right position to insert i in 
+*)
+Fixpoint insert (i : nat) (l : list nat) :=
+  match l with
+  | [] => [i]
+  | h :: t => if i <=? h then i :: h :: t else h :: insert i t
+  end.
+
+(* if list is empty, it's already sorted / nothing to sort
+   else, insert current element of unsorted (given) list into a sorted list
+*)
+Fixpoint sort (l : list nat) : list nat :=
+  match l with
+  | [] => []
+  | h :: t => insert h (sort t)
+  end.
+
+(* Sorted predicate: https://gist.github.com/siraben/3fedfc2c5a242136a9bc6725064e9b7d
+   - helpful to prove sort and insert work correctly
+   - if empty list, it's sorted
+   - else if singleton, list with that one element is sorted
+   - else, for n, m, p in list, if n is less than m, we can sort list with m & p, then list with n, m and p is sorted
+*)
+Inductive Sorted : list nat -> Prop :=
+| sorted_nil : Sorted []
+| sorted_singleton : forall n, Sorted [n]
+| sorted_cons : forall n m p, n <= m -> Sorted (m :: p) -> Sorted (n :: m :: p).
+
+(* proof insert and sort functions work
+  - adding an element x to a sorted list should result in a sorted list
+  - for any list l, sort l should result in a sorted list
+*)
+
+Lemma check_inserting_into_sorted:
+  forall (x : nat) (l : list nat), Sorted l -> Sorted (insert x l).
+Proof.
+   induction l.
+  - sfirstorder.
+  - destruct l; sblast.
+Qed.
+
+Lemma sorting_lists_works:
+  forall (l : list nat), Sorted (sort l).
+Proof.
+  induction l; 
+  sfirstorder use: sorted_insert.
+Qed.
+
+(* binary search function
+  - recursively halves the list looking for an element in given list (sorted) 
+*)
+
+(* call the binary search function with a sorted list *)
+
+(* proof binary search is correct *)
+
+(* proof that using linear search and binary search return the same value: T/F for an element E *)
