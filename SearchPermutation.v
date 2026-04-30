@@ -119,11 +119,34 @@ Proof.
   sfirstorder use: sorted_insert.
 Qed.
 
+(* index access function
+   - goes through list till it finds element at index N
+   - N is midpoint of low and high
+   - idx starts at low
+*)
+Fixpoint index_access (mid : nat) (idx : nat) (l : list nat) : nat :=
+  match idx with
+  | mid => (* split l into hd::tail and return hd *)
+  | _ => (* split l into hd::tail and call index_access with idx+1 *)
+  end.
+
 (* binary search function
   - recursively halves the list looking for an element in given list (sorted) 
 *)
+Fixpoint binary_search (e low high : nat) (l : list nat) : bool :=
+  if high <? low then false
+  else 
+    let midpoint := ((high - low)/2).
+    let item := index_access midpoint low l
+    if item Nat.eqb e then true 
+    else 
+      if e <? item then binary_search e low (midpoint - 1) l
+      else binary_search e (midpoint + 1) high l
+  end.
 
 (* call the binary search function with a sorted list *)
+Definition binary_search_caller (e : nat) (l : list nat) :=
+  binary_search e 0 (len l) (sort l).
 
 (* proof binary search is correct *)
 
