@@ -144,9 +144,16 @@ Fixpoint binary_search (e low high : nat) (l : list nat) : bool :=
       else binary_search e (midpoint + 1) high l
   end.
 
+(* size function, gets length of list *)
+Fixpoint sz (n : nat) (l : list nat) : nat :=
+  match l with
+  | [] => n 
+  | hd::tail => sz (n+1) tail
+  end.
+
 (* call the binary search function with a sorted list *)
 Definition binary_search_caller (e : nat) (l : list nat) :=
-  binary_search e 0 (len l) (sort l).
+  binary_search e 0 (sz 0 l) (sort l).
 
 (* proof binary search is correct *)
 
