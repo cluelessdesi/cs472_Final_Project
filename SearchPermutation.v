@@ -9,7 +9,7 @@
       Partially used AI to help with proof, where stuck (clarify as per profs request)
       insert, sort functions: https://coq.vercel.app/ext/sf/vfa/full/Sort.html
       Sorted Predicate, proofs for check_inserting_into_sorted & sorting_lists_works: https://gist.github.com/siraben/3fedfc2c5a242136a9bc6725064e9b7d
-    
+      Claude provided suggestion to use max_calls as a decreasing value that binary_search could use.
     add to README later:
       installed coq-hammer
 *)
@@ -116,32 +116,53 @@ Lemma sorting_lists_works:
   forall (l : list nat), Sorted (sort l).
 Proof.
   induction l; 
-  sfirstorder use: sorted_insert.
+  sfirstorder use: check_inserting_into_sorted.
 Qed.
 
 (* index access function
    - goes through list till it finds element at index N
    - N is midpoint of low and high
-   - idx starts at low
+   - idx starts at low, need to pass a sublist starting at low for this to work, did not use approach
+   - idx starts at 0
 *)
+
 Fixpoint index_access (mid : nat) (idx : nat) (l : list nat) : nat :=
-  match idx with
-  | mid => (* split l into hd::tail and return hd *)
-  | _ => (* split l into hd::tail and call index_access with idx+1 *)
+  match l with
+  | [] => 0
+  | hd::tail =>
+      if idx =? mid then hd
+      else index_access mid (idx + 1) tail
+  end.
+
+(* creates a sublist starting from low
+   equivalent to sub = list[low:] in python
+   - did not use function
+*)
+Fixpoint create_sublist (start_here : nat) (idx : nat) (l : list nat) : list nat :=
+  match l with
+  | [] => []
+  | hd::tail =>
+      if idx <? start_here then create_sublist start_here (idx + 1) tail
+      else hd :: create_sublist start_here (idx + 1) tail
   end.
 
 (* binary search function
   - recursively halves the list looking for an element in given list (sorted) 
+  - rocq error: cannot guess decreasing argument to fix => added a max_calls (suggestion provided by Claude)
 *)
-Fixpoint binary_search (e low high : nat) (l : list nat) : bool :=
-  if high <? low then false
-  else 
-    let midpoint := ((high - low)/2).
-    let item := index_access midpoint low l
-    if item Nat.eqb e then true 
-    else 
-      if e <? item then binary_search e low (midpoint - 1) l
-      else binary_search e (midpoint + 1) high l
+Fixpoint binary_search (e low high max_calls : nat) (l : list nat) : bool :=
+  match max_calls with
+  | 0 => false
+  | S max_calls' =>
+      if high <? low then false
+      else
+        let midpoint := ((high + low)/2) in
+        (* complicated and more comp cost cos need to construct sublist on every iteration and we don't use it *)
+        (* let item := index_access (midpoint - low) 0 (create_sublist low 0 l) in *)
+        let item := index_access midpoint 0 l in
+        if e =? item then true 
+        else if e <? item then binary_search e low (midpoint - 1) max_calls' l
+        else binary_search e (midpoint + 1) high max_calls' l
   end.
 
 (* size function, gets length of list *)
@@ -151,9 +172,18 @@ Fixpoint sz (n : nat) (l : list nat) : nat :=
   | hd::tail => sz (n+1) tail
   end.
 
-(* call the binary search function with a sorted list *)
-Definition binary_search_caller (e : nat) (l : list nat) :=
-  binary_search e 0 (sz 0 l) (sort l).
+(* call the binary search function with a sorted list
+   - e: element we are trying to find
+   - low: starts at 0
+   - high: length of list - 1
+   - max_calls: should ideally be log2(length of list), I set it to length of list
+   - l: non empty sorted list
+*)
+Definition binary_search_caller (e : nat) (l : list nat) : bool :=
+  match l with 
+  | [] => false
+  | _ => binary_search e 0 ((sz 0 l) - 1) (sz 0 l) (sort l)
+  end.
 
 (* proof binary search is correct *)
 
