@@ -1,5 +1,4 @@
 
-(* ################################################################# *)
 (** Search and Permutations
 
     CS 472 Final Project.
@@ -17,10 +16,7 @@
 From Stdlib Require Import Arith List Permutation.
 Import ListNotations.
 From Hammer Require Import Tactics.
-
-
 (* Linear Search *)
-
 (* scan the list left to right and check if e is curr eleement  return true if found, false otherwise. basecase nil list returns false *)
 Fixpoint linear_search (e : nat) (l : list nat) : bool :=
   match l with
@@ -62,16 +58,17 @@ return the same bool value for any element e in both of the lists*)
 Proof.
   intros l l_perm e Hperm.
   rewrite !linear_search_true_iff_In.
+  (* split it so both directions are proved *)
   split.
-  (* so if e is in the original list it's alsoin the permuted list so all this is doing a forward proof *)
+  (* forward direction -> if e is in l then it's also in l_perm *)
+  - apply Permutation_in; assumption.
+  (* backward direction <- if e is in l_perm then it's also in l *)
   - intro Hin.
-    apply (Permutation_in Hperm).
-    exact Hin.
-  - intro Hin.
-  (*so it just implies e is in l_perm because the lists are permutations of each other hence we use it*)
-    apply (Permutation_in (Permutation_sym Hperm)).
-    exact Hin.
+    (* use the permutation_in lemma to prove the backward direction *)
+    apply Permutation_in with (l := l_perm) (l' := l); [| assumption].
+    now apply Permutation_sym.
 Qed.
+
 
 (* binary search *)
 (* need to make sure list is sorted first *)
