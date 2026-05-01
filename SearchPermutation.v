@@ -5,17 +5,18 @@
     Zuhaib Ilyas & Sufiyan Shariff
   
     Sources Used / Citations:
+      Partial usage of AI in the linear_search_true_iff_In where the bidirectional proof was not working and was stuck
       insert, sort functions: https://coq.vercel.app/ext/sf/vfa/full/Sort.html
       Sorted Predicate, proofs for check_inserting_into_sorted & sorting_lists_works: https://gist.github.com/siraben/3fedfc2c5a242136a9bc6725064e9b7d
       Claude provided suggestion to use max_calls as a decreasing value that binary_search could use.
     add to README later:
       installed coq-hammer
-      Partial usage of AI in the linear_search_true_iff_In where the bidirectional proof was not working and was stuck
 *)
 
 From Stdlib Require Import Arith List Permutation.
 Import ListNotations.
 From Hammer Require Import Tactics.
+
 (* Linear Search *)
 (* scan the list left to right and check if e is curr eleement  return true if found, false otherwise. basecase nil list returns false *)
 Fixpoint linear_search (e : nat) (l : list nat) : bool :=
@@ -132,7 +133,6 @@ Qed.
    - idx starts at low, need to pass a sublist starting at low for this to work, did not use approach
    - idx starts at 0
 *)
-
 Fixpoint index_access (mid : nat) (idx : nat) (l : list nat) : nat :=
   match l with
   | [] => 0
@@ -195,3 +195,8 @@ Definition binary_search_caller (e : nat) (l : list nat) : bool :=
 (* proof binary search is correct *)
 
 (* proof that using linear search and binary search return the same value: T/F for an element E *)
+Lemma binary_linear_same:
+  forall (e : nat) (l : list nat), binary_search_caller e l = linear_search e l.
+
+Proof.
+Admitted.
