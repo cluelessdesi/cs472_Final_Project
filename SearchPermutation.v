@@ -2,54 +2,60 @@
 (* ################################################################# *)
 (** Search and Permutations
 
-    CS 472 SP'26 Final Project.
+    CS 472 Final Project.
     Zuhaib Ilyas & Sufiyan Shariff
-    
+  
     Sources Used / Citations:
-      Partially used AI to help with proof, where stuck (clarify as per profs request)
       insert, sort functions: https://coq.vercel.app/ext/sf/vfa/full/Sort.html
       Sorted Predicate, proofs for check_inserting_into_sorted & sorting_lists_works: https://gist.github.com/siraben/3fedfc2c5a242136a9bc6725064e9b7d
       Claude provided suggestion to use max_calls as a decreasing value that binary_search could use.
     add to README later:
       installed coq-hammer
+      Partial usage of AI in the linear_search_true_iff_In where the bidirectional proof was not working and was stuck
 *)
 
 From Stdlib Require Import Arith List Permutation.
 Import ListNotations.
 From Hammer Require Import Tactics.
 
-(* ################################################################# *)
-(** * Linear Search *)
 
+(* Linear Search *)
+
+(* scan the list left to right and check if e is curr eleement  return true if found, false otherwise. basecase nil list returns false *)
 Fixpoint linear_search (e : nat) (l : list nat) : bool :=
   match l with
   | nil => false
   | x :: xs => if Nat.eqb e x then true else linear_search e xs
   end.
 
-Lemma linear_search_cons (e a : nat) (xs : list nat) :
-  linear_search e (a :: xs) = if Nat.eqb e a then true else linear_search e xs.
-Proof. reflexivity. Qed.
-
-
 Lemma linear_search_true_iff_In :
+(* forward -> e l -> true implies e is in l *)
+(* backward <- e l -> true implies e is in l *)
   forall (e : nat) (l : list nat), linear_search e l = true <-> In e l.
 Proof.
-  intros e l; split.
-  - revert e; induction l as [|a xs IH]; simpl.
-    + discriminate.
-    + intros e H; destruct (Nat.eqb_spec e a) as [Heq | Hne].
-      * subst; left; reflexivity.
-      * right; now apply IH.
-  - intros Hin; induction l as [|a xs IH].
-    + contradiction.
-    + destruct Hin as [Heq | Hin'].
-      * subst; rewrite linear_search_cons, Nat.eqb_refl; reflexivity.
-      * rewrite linear_search_cons; destruct (Nat.eqb e a); simpl;
-          [ reflexivity | now apply IH ].
+  intros e l.
+  induction l as [|a xs IH].
+  (* the empty list which is the base case can never contain e which returns false *)
+  (* second case is the non empty list which is the inductive case and we can use the inductive hypothesis to prove the forward and backward directions *)
+  - simpl. split.
+    + intros H. discriminate H.
+    + intros H. contradiction.
+  - simpl. split.
+    + intros H.
+      destruct (Nat.eqb e a) eqn:Heq.
+      * apply Nat.eqb_eq in Heq. subst. left. reflexivity.
+      * right. apply IH. exact H.
+    + intros H.
+      destruct H as [H | H].
+      * subst. rewrite Nat.eqb_refl. reflexivity.
+      * destruct (Nat.eqb e a) eqn:Heq.
+        { reflexivity. }
+        { apply IH in H. exact H. }
 Qed.
 
 Theorem search_correct_on_permutations :
+(*so if two lists are permutations of each other then the linear search would 
+return the same bool value for any element e in both of the lists*)
   forall (l l_perm : list nat) (e : nat),
     Permutation l l_perm ->
     (linear_search e l = true <-> linear_search e l_perm = true).
@@ -57,10 +63,14 @@ Proof.
   intros l l_perm e Hperm.
   rewrite !linear_search_true_iff_In.
   split.
-  - apply Permutation_in; assumption.
+  (* so if e is in the original list it's alsoin the permuted list so all this is doing a forward proof *)
   - intro Hin.
-    apply Permutation_in with (l := l_perm) (l' := l); [| assumption].
-    now apply Permutation_sym.
+    apply (Permutation_in Hperm).
+    exact Hin.
+  - intro Hin.
+  (*so it just implies e is in l_perm because the lists are permutations of each other hence we use it*)
+    apply (Permutation_in (Permutation_sym Hperm)).
+    exact Hin.
 Qed.
 
 (* binary search *)
