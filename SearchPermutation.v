@@ -5,12 +5,10 @@
     Zuhaib Ilyas & Sufiyan Shariff
   
     Sources Used / Citations:
-      Partial usage of AI in the linear_search_true_iff_In where the bidirectional proof was not working and was stuck
+      Partial usage of AI in the linear_search_true_iff_In where the bidirectional proof was not working and we were stuck.
       insert, sort functions: https://coq.vercel.app/ext/sf/vfa/full/Sort.html
       Sorted Predicate, proofs for check_inserting_into_sorted & sorting_lists_works: https://gist.github.com/siraben/3fedfc2c5a242136a9bc6725064e9b7d
       Claude provided suggestion to use max_calls as a decreasing value that binary_search could use.
-    add to README later:
-      installed coq-hammer
 *)
 
 From Stdlib Require Import Arith List Permutation.
