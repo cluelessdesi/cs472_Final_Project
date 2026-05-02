@@ -1,5 +1,6 @@
 # cs472_Final_Project
 Final Project for CS 472, SP ' 26
+Link to google doc: https://docs.google.com/document/d/1yNDm_zXJspuRbueUIACct1RGBbmFzgd9PUse1lPgu3I/edit?usp=sharing
 
 ## Team
 - Zuhaib Ilyas
